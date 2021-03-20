@@ -9,4 +9,8 @@ module.exports = {
   },
   plugins: [new HtmlWebpackPlugin()],
   mode: 'development',
+  experiments: {
+    syncWebAssembly: true,
+    asyncWebAssembly: true,
+  },
 }
