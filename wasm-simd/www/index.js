@@ -27,7 +27,7 @@ function arraySum(arr1, arr2, instance) {
 (async () => {
   import("./wasm_simd.wasm").then(async (mod) => {
     // instantiate the module
-    let count = 50_0000
+    let count = 500_0000
     let arr1 = [];
     let arr2 = [];
     for (let i = 0; i < count; i++) {

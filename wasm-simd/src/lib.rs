@@ -12,7 +12,7 @@
 
 // #[cfg(target_arch = "wasm32")]
 #[no_mangle]
-pub unsafe fn array_sum(ptr1: *mut i32, ptr2: *mut i32, len1: usize, len2: usize) -> i32 {
+pub unsafe fn array_sum_simd(ptr1: *mut i32, ptr2: *mut i32, len1: usize, len2: usize) -> i32 {
     use std::arch::wasm32::*;
     // create a Vec<u8> from the pointer to the
     // linear memory and the length
@@ -24,8 +24,18 @@ pub unsafe fn array_sum(ptr1: *mut i32, ptr2: *mut i32, len1: usize, len2: usize
         res = i32x4_add(
             res,
             i32x4_mul(
-                i32x4_const(*ptr1.offset(i), *ptr1.offset(i + 1), *ptr1.offset(i + 2), *ptr1.offset(i + 3)),
-                i32x4_const(*ptr2.offset(i), *ptr2.offset(i + 1), *ptr2.offset(i + 2), *ptr2.offset(i + 3)),
+                i32x4_const(
+                    *ptr1.offset(i),
+                    *ptr1.offset(i + 1),
+                    *ptr1.offset(i + 2),
+                    *ptr1.offset(i + 3),
+                ),
+                i32x4_const(
+                    *ptr2.offset(i),
+                    *ptr2.offset(i + 1),
+                    *ptr2.offset(i + 2),
+                    *ptr2.offset(i + 3),
+                ),
             ),
         );
     }
@@ -35,6 +45,16 @@ pub unsafe fn array_sum(ptr1: *mut i32, ptr2: *mut i32, len1: usize, len2: usize
         + i32x4_extract_lane::<3>(res)
     // actually compute the sum and return it
     // data.iter().sum()
+}
+
+#[no_mangle]
+pub unsafe fn array_sum(ptr1: *mut i32, ptr2: *mut i32, len1: usize, len2: usize) -> i32 {
+    let mut res = 0;
+    for i in 0..len1 {
+        let i = i as isize;
+        res += (*ptr1.offset(i) * *ptr2.offset(i));
+    }
+    res
 }
 
 #[no_mangle]
