@@ -18,33 +18,26 @@ pub unsafe fn array_sum_simd(ptr1: *mut i32, ptr2: *mut i32, len1: usize, len2: 
     // linear memory and the length
     // let mut a1 = std::slice::from_raw_parts(ptr1, len1);
     // let mut a2 = std::slice::from_raw_parts(ptr2, len2);
+    let ptr1v128 = ptr1 as *const v128;
+    let ptr2v128 = ptr2 as *const v128;
+    let len = len1 as isize;
     let mut res: v128 = i32x4_splat(0);
-    for i in (0..len1).step_by(4) {
-        let i = i as isize;
+    let mut index = 0isize;
+    // let mut count = 0isize;
+    while (index << 2) < len  {
         res = i32x4_add(
             res,
             i32x4_mul(
-                i32x4_const(
-                    *ptr1.offset(i),
-                    *ptr1.offset(i + 1),
-                    *ptr1.offset(i + 2),
-                    *ptr1.offset(i + 3),
-                ),
-                i32x4_const(
-                    *ptr2.offset(i),
-                    *ptr2.offset(i + 1),
-                    *ptr2.offset(i + 2),
-                    *ptr2.offset(i + 3),
-                ),
+                v128_load((ptr1v128).offset(index)),
+                v128_load((ptr2v128).offset(index)),
             ),
         );
+        index += 1;
     }
     i32x4_extract_lane::<0>(res)
         + i32x4_extract_lane::<1>(res)
         + i32x4_extract_lane::<2>(res)
         + i32x4_extract_lane::<3>(res)
-    // actually compute the sum and return it
-    // data.iter().sum()
 }
 
 #[no_mangle]
