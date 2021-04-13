@@ -14,17 +14,12 @@
 #[no_mangle]
 pub unsafe fn array_sum_simd(ptr1: *mut i32, ptr2: *mut i32, len1: usize, len2: usize) -> i32 {
     use std::arch::wasm32::*;
-    // create a Vec<u8> from the pointer to the
-    // linear memory and the length
-    // let mut a1 = std::slice::from_raw_parts(ptr1, len1);
-    // let mut a2 = std::slice::from_raw_parts(ptr2, len2);
     let ptr1v128 = ptr1 as *const v128;
     let ptr2v128 = ptr2 as *const v128;
-    let len = len1 as isize;
     let mut res: v128 = i32x4_splat(0);
     let mut index = 0isize;
     // let mut count = 0isize;
-    while (index << 2) < len  {
+    for _ in (0..len1).step_by(4) {
         res = i32x4_add(
             res,
             i32x4_mul(

@@ -31,7 +31,7 @@ function arraySum(arr1, arr2, instance) {
 (async () => {
   import("./wasm_simd.wasm").then(async (mod) => {
     // instantiate the module
-    let count = 50_00000;
+    let count = 5_000_000;
     let arr1 = [];
     let arr2 = [];
     for (let i = 0; i < count; i++) {
@@ -39,14 +39,14 @@ function arraySum(arr1, arr2, instance) {
       arr2.push(Math.round(Math.random() * 10));
     }
     var res = arraySum(arr1, arr2, mod);
-    console.log("wasm: ", res);
+    console.log("wasm-simd-dot-product: ", res);
     //   console.log(arr);
     console.time("js");
     let jsRes = 0;
     for (let i = 0; i < count; i++) {
       jsRes += arr1[i] * arr2[i];
     }
-    console.log("js: ", jsRes);
     console.timeEnd("js");
+    console.log("js-dot-product:", jsRes);
   });
 })();
