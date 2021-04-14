@@ -17,15 +17,13 @@ function arraySum(arr1, arr2, instance) {
   // module's memory and get the offset
   let [ptr1, ptr2] = copyMemory(arr1, arr2, instance);
 
-  // invoke the module's `array_sum` exported function
-  // and log the result
-  console.time("wasm");
-  var res = instance.array_sum_simd(ptr1, ptr2, arr1.length, arr2.length);
-  console.timeEnd("wasm");
+  console.time("wasm-simd");
+  let res = instance.array_sum_simd(ptr1, ptr2, arr1.length, arr2.length);
+  console.timeEnd("wasm-simd");
 
-  console.time("wasm_auto");
-  var res2 = instance.array_sum(ptr1, ptr2, arr1.length, arr2.length);
-  console.timeEnd("wasm_auto");
+  console.time("wasm-auto-vectorization ");
+  let res2 = instance.array_sum(ptr1, ptr2, arr1.length, arr2.length);
+  console.timeEnd("wasm-auto-vectorization ");
   return res;
 }
 (async () => {

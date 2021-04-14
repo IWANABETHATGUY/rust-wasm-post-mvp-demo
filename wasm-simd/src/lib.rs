@@ -18,8 +18,7 @@ pub unsafe fn array_sum_simd(ptr1: *mut i32, ptr2: *mut i32, len1: usize, len2: 
     let ptr2v128 = ptr2 as *const v128;
     let mut res: v128 = i32x4_splat(0);
     let mut index = 0isize;
-    // let mut count = 0isize;
-    for _ in (0..len1).step_by(4) {
+    for index in (0..len1 as isize / 4) {
         res = i32x4_add(
             res,
             i32x4_mul(
@@ -27,7 +26,6 @@ pub unsafe fn array_sum_simd(ptr1: *mut i32, ptr2: *mut i32, len1: usize, len2: 
                 v128_load((ptr2v128).offset(index)),
             ),
         );
-        index += 1;
     }
     i32x4_extract_lane::<0>(res)
         + i32x4_extract_lane::<1>(res)
