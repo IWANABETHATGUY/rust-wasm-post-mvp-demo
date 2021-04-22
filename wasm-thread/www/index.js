@@ -2,15 +2,23 @@ import * as wasm from "../pkg/wasm_thread";
 
 (async () => {
   await wasm.default();
-  await wasm.initThreadPool(navigator.hardwareConcurrency / 2 - 1);
+  await wasm.initThreadPool(navigator.hardwareConcurrency);
+
   let arr = new Array(5000000).fill(1);
   for (let i = 0; i < arr.length; i++) {
     arr[i] = Math.round(Math.random() * 10000);
   }
   let arrI32 = new Int32Array(arr);
-  // arr.sort()
-  // console.log(wasm.sort_array_concurrent(arrI32));
 
+  // sort bench
+  console.time("sort-js")
+  arr.sort((a, b) => a - b)
+  console.timeEnd("sort-js")
+
+  console.time("sort-wasm")
+  wasm.sort_array_concurrent(arrI32)
+  console.timeEnd("sort-wasm")
+  return
   // fibonacci bench
   console.time("js_fib");
   const js_fib = fibonacci(35);
