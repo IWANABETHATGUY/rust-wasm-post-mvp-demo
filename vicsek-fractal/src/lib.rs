@@ -54,7 +54,7 @@ pub fn fill(x: usize, y: usize, w: usize, h: usize) {
         for j in x..x + w {
             let index = i * WIDTH + j;
             unsafe {
-                BUFFER[index] = 0xFF_FF_00_00;
+                BUFFER[index] = 0xFF_00_00_FF;
             }
         }
     }

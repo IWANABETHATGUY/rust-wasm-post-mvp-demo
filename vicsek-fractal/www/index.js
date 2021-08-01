@@ -30,7 +30,7 @@ let depth = 8;
 // ctx.fill();
 // console.timeEnd("js");
 
-WebAssembly.instantiateStreaming(fetch("./vicsek_fractal_bg.wasm")).then(({ instance }) => {
+WebAssembly.instantiateStreaming(fetch("/pkg/vicsek_fractal_bg.wasm")).then(({ instance }) => {
   console.time("wasm");
   instance.exports.draw_fractal(0, 0, width, height, 0, depth);
   const buffer_address = instance.exports.BUFFER.value;
