@@ -57,14 +57,13 @@ let depth = 8;
   console.time("wasm");
   wasm.draw_fractal(0, 0, width, height, 0, depth);
   console.timeEnd("wasm");
-  // const buffer_address = instance.exports.BUFFER.value;
-  // let data = new Uint8ClampedArray(instance.exports.memory.buffer, buffer_address, 900 * 900 * 4);
-  // console.log(data);
-  // ctx.putImageData(new ImageData(data, height, width), 0, 0);
+  const buffer_address = wasm.BUFFER;
+  let data = new Uint8ClampedArray(wasm.memory.buffer, buffer_address, 900 * 900 * 4);
+  ctx.putImageData(new ImageData(data, height, width), 0, 0);
 })();
 
-// console.time("js");
-// ctx.beginPath();
-// drawFractal(0, 0, width, height, 0, 10)
-// ctx.fill();
-// console.timeEnd("js");
+console.time("js");
+ctx.beginPath();
+drawFractal(0, 0, width, height, 0, 10)
+ctx.fill();
+console.timeEnd("js");

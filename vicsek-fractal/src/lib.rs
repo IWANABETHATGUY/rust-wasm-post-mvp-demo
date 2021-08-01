@@ -4,23 +4,6 @@ use std::ops::IndexMut;
 
 use wasm_bindgen::prelude::*;
 
-#[wasm_bindgen]
-extern "C" {
-    // Use `js_namespace` here to bind `console.log(..)` instead of just
-    // `log(..)`
-    #[wasm_bindgen(js_namespace = console)]
-    fn log(s: &str);
-
-    // The `console.log` is quite polymorphic, so we can bind it with multiple
-    // signatures. Note that we need to use `js_name` to ensure we always call
-    // `log` in JS.
-    #[wasm_bindgen(js_namespace = console, js_name = log)]
-    fn log_u32(a: u32);
-
-    // Multiple arguments too!
-    #[wasm_bindgen(js_namespace = console, js_name = log)]
-    fn log_many(a: &str, b: &str);
-}
 // When the `wee_alloc` feature is enabled, use `wee_alloc` as the global
 // allocator.
 #[cfg(feature = "wee_alloc")]
@@ -51,11 +34,11 @@ static mut BUFFER: [u32; WIDTH * HEIGHT] = [0; WIDTH * HEIGHT];
 #[wasm_bindgen]
 pub fn draw_fractal(x: usize, y: usize, w: usize, h: usize, depth: usize, max_depth: usize) {
     if depth == max_depth {
-        fill_simd(x, y, w, h);
+        fill(x, y, w, h);
         return;
     }
     if w <= 1 || h <= 1 {
-        fill_simd(x, y, w.max(1), h.max(1));
+        fill(x, y, w.max(1), h.max(1));
         return;
     }
     let w_3 = w / 3;
@@ -78,26 +61,6 @@ pub fn fill(x: usize, y: usize, w: usize, h: usize) {
     }
 }
 
-#[wasm_bindgen]
-pub fn fill_simd(x: usize, y: usize, w: usize, h: usize) {
-    use packed_simd::u32x4;
-    for i in y..y + h {
-        let start = i * WIDTH + x;
-        unsafe {
-            // let buffer = &BUFFER[start..start + w];
-                // .chunks_exact(4)
-                // .map(u32x4::from_slice_unaligned)
-                // .for_each(|a| {
-                //     log("something");
-                //     a.replace_unchecked(0, 0xFF_00_00_FF);
-                //     a.replace_unchecked(1, 0xFF_00_00_FF);
-                //     a.replace_unchecked(2, 0xFF_00_00_FF);
-                //     a.replace_unchecked(3, 0xFF_00_00_FF);
-                //     a.write_to_slice_unaligned(&mut BUFFER[start..]);
-                // });
-        }
-    }
-}
 
 #[wasm_bindgen]
 pub fn dot_product_simd(a: &[i32], b: &[i32]) -> i32 {
