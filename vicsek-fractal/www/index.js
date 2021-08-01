@@ -24,13 +24,13 @@ function drawFractal(x, y, w, h, depth, maxDepth) {
 }
 
 let depth = 8;
-console.time("js");
-ctx.beginPath();
-drawFractal(0, 0, width, height, 0, 10)
-ctx.fill();
-console.timeEnd("js");
+// console.time("js");
+// ctx.beginPath();
+// drawFractal(0, 0, width, height, 0, 10)
+// ctx.fill();
+// console.timeEnd("js");
 
-WebAssembly.instantiateStreaming(fetch("/pkg/vicsek_fractal_bg.wasm")).then(({ instance }) => {
+WebAssembly.instantiateStreaming(fetch("./vicsek_fractal_bg.wasm")).then(({ instance }) => {
   console.time("wasm");
   instance.exports.draw_fractal(0, 0, width, height, 0, depth);
   const buffer_address = instance.exports.BUFFER.value;
