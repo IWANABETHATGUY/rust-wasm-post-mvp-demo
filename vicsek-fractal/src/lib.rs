@@ -48,8 +48,8 @@ pub fn draw_fractal(x: usize, y: usize, w: usize, h: usize, depth: usize, max_de
     draw_fractal(x + 2 * w_3, y + 2 * h_3, w_3, h_3, depth + 1, max_depth);
 }
 #[wasm_bindgen]
-#[inline]
 pub fn fill(x: usize, y: usize, w: usize, h: usize) {
+    use packed_simd::u32x4;
     for i in y..y + h {
         for j in x..x + w {
             let index = i * WIDTH + j;
@@ -58,4 +58,17 @@ pub fn fill(x: usize, y: usize, w: usize, h: usize) {
             }
         }
     }
+}
+
+#[wasm_bindgen]
+pub fn dot_product(a: &[i32], b: &[i32]) -> i32 {
+    use packed_simd::i32x4;
+
+    let res = a
+        .chunks_exact(4)
+        .map(i32x4::from_slice_unaligned)
+        .zip(b.chunks_exact(4).map(i32x4::from_slice_unaligned))
+        .map(|(a, b)| a * b)
+        .sum::<i32x4>();
+    res.wrapping_sum()
 }

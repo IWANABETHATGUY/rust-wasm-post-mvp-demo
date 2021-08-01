@@ -1,3 +1,4 @@
+import init, { dot_product } from "./pkg/vicsek_fractal";
 /**@type{HTMLCanvasElement} */
 const canvas = document.getElementById("canvas");
 const ctx = canvas.getContext("2d");
@@ -24,6 +25,14 @@ function drawFractal(x, y, w, h, depth, maxDepth) {
 }
 
 let depth = 8;
+
+(async () => {
+  await init();
+  const a = new Int32Array([1, 2, 3, 4]);
+  const b = new Int32Array([1, 2, 3, 4]);
+  console.log(dot_product(a, b));
+})();
+
 // console.time("js");
 // ctx.beginPath();
 // drawFractal(0, 0, width, height, 0, 10)
@@ -37,5 +46,4 @@ WebAssembly.instantiateStreaming(fetch("/pkg/vicsek_fractal_bg.wasm")).then(({ i
   let data = new Uint8ClampedArray(instance.exports.memory.buffer, buffer_address, 900 * 900 * 4);
   ctx.putImageData(new ImageData(data, height, width), 0, 0);
   console.timeEnd("wasm");
-  // console.log(buffer)
 });
