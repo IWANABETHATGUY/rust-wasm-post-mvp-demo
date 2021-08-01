@@ -1,5 +1,7 @@
 mod utils;
 
+use std::ops::IndexMut;
+
 use wasm_bindgen::prelude::*;
 
 // When the `wee_alloc` feature is enabled, use `wee_alloc` as the global
@@ -32,11 +34,11 @@ static mut BUFFER: [u32; WIDTH * HEIGHT] = [0; WIDTH * HEIGHT];
 #[wasm_bindgen]
 pub fn draw_fractal(x: usize, y: usize, w: usize, h: usize, depth: usize, max_depth: usize) {
     if depth == max_depth {
-        fill(x, y, w, h);
+        fill_simd(x, y, w, h);
         return;
     }
     if w <= 1 || h <= 1 {
-        fill(x, y, w.max(1), h.max(1));
+        fill_simd(x, y, w.max(1), h.max(1));
         return;
     }
     let w_3 = w / 3;
@@ -49,21 +51,41 @@ pub fn draw_fractal(x: usize, y: usize, w: usize, h: usize, depth: usize, max_de
 }
 #[wasm_bindgen]
 pub fn fill(x: usize, y: usize, w: usize, h: usize) {
-    use packed_simd::u32x4;
     for i in y..y + h {
         for j in x..x + w {
             let index = i * WIDTH + j;
             unsafe {
-                BUFFER[index] = 0xFF_00_00_FF;
+                *BUFFER.get_unchecked_mut(index) = 0xFF_00_00_FF;
             }
         }
     }
 }
 
 #[wasm_bindgen]
-pub fn dot_product(a: &[i32], b: &[i32]) -> i32 {
+pub fn fill_simd(x: usize, y: usize, w: usize, h: usize) {
+    use packed_simd::u32x4;
+    for i in y..y + h {
+        let start = i * WIDTH + x;
+        unsafe {
+            BUFFER[start..start + w]
+                .chunks_exact(4)
+                .map(u32x4::from_slice_unaligned)
+                .for_each(|a| {
+                    a.replace_unchecked(0, 0xFF_00_00_FF);
+                    a.replace_unchecked(1, 0xFF_00_00_FF);
+                    a.replace_unchecked(2, 0xFF_00_00_FF);
+                    a.replace_unchecked(3, 0xFF_00_00_FF);
+                });
+        }
+    }
+}
+
+#[wasm_bindgen]
+pub fn dot_product_simd(a: &[i32], b: &[i32]) -> i32 {
     use packed_simd::i32x4;
 
+    assert_eq!(a.len(), b.len());
+    // assert!(a.len() % 4 == 0);
     let res = a
         .chunks_exact(4)
         .map(i32x4::from_slice_unaligned)
@@ -72,3 +94,22 @@ pub fn dot_product(a: &[i32], b: &[i32]) -> i32 {
         .sum::<i32x4>();
     res.wrapping_sum()
 }
+
+#[wasm_bindgen]
+pub fn dot_product(a: &[i32], b: &[i32]) -> i32 {
+    assert_eq!(a.len(), b.len());
+    // assert!(a.len() % 4 == 0);
+    a.iter()
+        .zip(b.iter())
+        .fold(0, |acc, (aa, bb)| acc + aa * bb)
+}
+
+// #[no_mangle]
+// pub unsafe fn array_sum(ptr1: *mut i32, ptr2: *mut i32, len1: usize, len2: usize) -> i32 {
+//     let mut res = 0;
+//     for i in 0..len1 {
+//         let i = i as isize;
+//         res += (*ptr1.offset(i) * *ptr2.offset(i));
+//     }
+//     res
+// }

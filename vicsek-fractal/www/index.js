@@ -1,4 +1,4 @@
-import init, { dot_product } from "./pkg/vicsek_fractal";
+import init, { dot_product, dot_product_simd } from "./pkg/vicsek_fractal";
 /**@type{HTMLCanvasElement} */
 const canvas = document.getElementById("canvas");
 const ctx = canvas.getContext("2d");
@@ -27,10 +27,32 @@ function drawFractal(x, y, w, h, depth, maxDepth) {
 let depth = 8;
 
 (async () => {
+  let count = 13412003;
+  let arr1 = [];
+  let arr2 = [];
+  for (let i = 0; i < count; i++) {
+    arr1.push(Math.round(Math.random() * 100));
+    arr2.push(Math.round(Math.random() * 100));
+  }
   await init();
-  const a = new Int32Array([1, 2, 3, 4]);
-  const b = new Int32Array([1, 2, 3, 4]);
+  const a = new Int32Array(arr1);
+  const b = new Int32Array(arr2);
+
+  console.time("dot_prod");
   console.log(dot_product(a, b));
+  console.timeEnd("dot_prod");
+
+  console.time("dot_prod_simd");
+  console.log(dot_product_simd(a, b));
+  console.timeEnd("dot_prod_simd");
+
+  console.time("js");
+  let jsRes = 0;
+  for (let i = 0; i < count; i++) {
+    jsRes += arr1[i] * arr2[i];
+  }
+  console.log('js result', jsRes)
+  console.timeEnd("js");
 })();
 
 // console.time("js");
@@ -42,8 +64,8 @@ let depth = 8;
 WebAssembly.instantiateStreaming(fetch("/pkg/vicsek_fractal_bg.wasm")).then(({ instance }) => {
   console.time("wasm");
   instance.exports.draw_fractal(0, 0, width, height, 0, depth);
+  console.timeEnd("wasm");
   const buffer_address = instance.exports.BUFFER.value;
   let data = new Uint8ClampedArray(instance.exports.memory.buffer, buffer_address, 900 * 900 * 4);
   ctx.putImageData(new ImageData(data, height, width), 0, 0);
-  console.timeEnd("wasm");
 });
