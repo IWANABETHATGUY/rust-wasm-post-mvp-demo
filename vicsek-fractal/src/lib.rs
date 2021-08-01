@@ -4,6 +4,23 @@ use std::ops::IndexMut;
 
 use wasm_bindgen::prelude::*;
 
+#[wasm_bindgen]
+extern "C" {
+    // Use `js_namespace` here to bind `console.log(..)` instead of just
+    // `log(..)`
+    #[wasm_bindgen(js_namespace = console)]
+    fn log(s: &str);
+
+    // The `console.log` is quite polymorphic, so we can bind it with multiple
+    // signatures. Note that we need to use `js_name` to ensure we always call
+    // `log` in JS.
+    #[wasm_bindgen(js_namespace = console, js_name = log)]
+    fn log_u32(a: u32);
+
+    // Multiple arguments too!
+    #[wasm_bindgen(js_namespace = console, js_name = log)]
+    fn log_many(a: &str, b: &str);
+}
 // When the `wee_alloc` feature is enabled, use `wee_alloc` as the global
 // allocator.
 #[cfg(feature = "wee_alloc")]
@@ -67,15 +84,17 @@ pub fn fill_simd(x: usize, y: usize, w: usize, h: usize) {
     for i in y..y + h {
         let start = i * WIDTH + x;
         unsafe {
-            BUFFER[start..start + w]
-                .chunks_exact(4)
-                .map(u32x4::from_slice_unaligned)
-                .for_each(|a| {
-                    a.replace_unchecked(0, 0xFF_00_00_FF);
-                    a.replace_unchecked(1, 0xFF_00_00_FF);
-                    a.replace_unchecked(2, 0xFF_00_00_FF);
-                    a.replace_unchecked(3, 0xFF_00_00_FF);
-                });
+            // let buffer = &BUFFER[start..start + w];
+                // .chunks_exact(4)
+                // .map(u32x4::from_slice_unaligned)
+                // .for_each(|a| {
+                //     log("something");
+                //     a.replace_unchecked(0, 0xFF_00_00_FF);
+                //     a.replace_unchecked(1, 0xFF_00_00_FF);
+                //     a.replace_unchecked(2, 0xFF_00_00_FF);
+                //     a.replace_unchecked(3, 0xFF_00_00_FF);
+                //     a.write_to_slice_unaligned(&mut BUFFER[start..]);
+                // });
         }
     }
 }
